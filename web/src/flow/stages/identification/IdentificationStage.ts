@@ -60,39 +60,100 @@ export class IdentificationStage extends BaseStage<
         PFButton,
         ...AkRememberMeController.styles,
         css`
-            .pf-c-form__group.pf-m-action {
-                display: flex;
-                gap: 1rem;
-                flex-direction: column;
-            }
+  .pf-c-form__group.pf-m-action {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between; /* left text | right button */
+    gap: 1.75rem;                   /* like tailwind gap-7 / gap-14 feel */
+    margin-top: 1rem;
+  }
 
-            /* login page's icons */
-            .pf-c-login__main-footer-links-item button {
-                background-color: transparent;
-                border: 0;
-                display: flex;
-                align-items: stretch;
-            }
-            .pf-c-login__main-footer-links-item img {
-                fill: var(--pf-c-login__main-footer-links-item-link-svg--Fill);
-                width: 100px;
-                max-width: var(--pf-c-login__main-footer-links-item-link-svg--Width);
-                height: 100%;
-                max-height: var(--pf-c-login__main-footer-links-item-link-svg--Height);
-            }
+  /* Recovery copy */
+  .ak-recovery {
+    margin: 0;
+    font-size: 14px;
+    color: #111827;                 /* near black */
+  }
+  .ak-recovery a {
+    color: #0b0b0b;
+    text-decoration: underline;
+  }
 
-            .captcha-container {
-                position: relative;
+  /* === Shared input styling (login + reset password) === */
+.pf-c-form-control,
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #eceef1;
+  background: #ffffff;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+  padding: 0 14px;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-top: 0.5rem;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
 
-                .faux-input {
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    opacity: 0;
-                    pointer-events: none;
-                }
-            }
-        `,
+/* Placeholder tone */
+.pf-c-form-control::placeholder,
+input::placeholder {
+  color: #9ca3af;
+}
+
+/* Focus state */
+.pf-c-form-control:focus,
+input:focus {
+  outline: none;
+  border-color: #d1d5db;
+  box-shadow: 0 0 0 3px rgba(209,213,219,0.55);
+}
+
+/* Labels */
+      .form-shell .pf-c-form__label,
+      .form-shell .pf-c-form__label-text,
+      .form-shell label {
+        font-size: 16px;
+        color: var(--label);
+        margin-bottom: 6px;
+        font-weight: 400 !important;
+      }
+
+      .pf-c-form__label-text.ak-stage-identification {
+        font-weight: 400;
+        font-size: 16px
+      }
+
+  /* Make sure the primary button is content-sized, not full width */
+  .pf-c-button.pf-m-primary.pf-m-block { width: auto !important; }
+
+  /* Left column already flex column, just make sure children align */
+.left {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;  /* content starts at top */
+  min-height: 100vh;            /* take full viewport height */
+}
+
+/* Footer pushed to bottom */
+.pf-c-login__main-footer-band {
+  margin-top: auto;             /* pushes it to bottom */
+  padding: 1rem 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+  /* Stack on small screens */
+  @media (max-width: 640px) {
+    .pf-c-form__group.pf-m-action {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .75rem;
+    }
+  }
+`
     ];
 
     /**
@@ -142,8 +203,10 @@ export class IdentificationStage extends BaseStage<
             this.#createHelperForm();
         }
     }
+    
 
     //#endregion
+    
 
     #autoRedirect(): void {
         if (!this.challenge) return;
@@ -281,25 +344,24 @@ export class IdentificationStage extends BaseStage<
     }
 
     renderFooter() {
-        if (!this.challenge?.enrollUrl && !this.challenge?.recoveryUrl) {
-            return nothing;
-        }
-        return html`<div slot="footer-band" class="pf-c-login__main-footer-band">
-            ${this.challenge.enrollUrl
-                ? html`<p class="pf-c-login__main-footer-band-item">
-                      ${msg("Need an account?")}
-                      <a id="enroll" href="${this.challenge.enrollUrl}">${msg("Sign up.")}</a>
-                  </p>`
-                : nothing}
-            ${this.challenge.recoveryUrl
-                ? html`<p class="pf-c-login__main-footer-band-item">
-                      <a id="recovery" href="${this.challenge.recoveryUrl}"
-                          >${msg("Forgot username or password?")}</a
-                      >
-                  </p>`
-                : nothing}
-        </div>`;
-    }
+  if (!this.challenge?.enrollUrl && !this.challenge?.recoveryUrl) {
+    return nothing;
+  }
+  return html`
+    <div slot="footer-band" class="pf-c-login__main-footer-band">
+      ${this.challenge.enrollUrl
+        ? html`
+            <p class="pf-c-login__main-footer-band-item" data-test-id='sign-up-link'>
+              ${msg("Don't have an account?")}
+              <a id="enroll" href="${this.challenge.enrollUrl}">
+                ${msg("Sign up.")}
+              </a>
+            </p>
+          `
+        : nothing}
+    </div>
+  `;
+}
 
     renderInput(): TemplateResult {
         let type: "text" | "email" = "text";
@@ -339,6 +401,8 @@ export class IdentificationStage extends BaseStage<
                     spellcheck="false"
                     class="pf-c-form-control"
                     value=${this.#rememberMe?.username ?? ""}
+                    data-test-id="email-input"
+                    pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
                     required
                 />
                 ${this.#rememberMe.render()}
@@ -354,42 +418,59 @@ export class IdentificationStage extends BaseStage<
                           .errors=${this.challenge?.responseErrors?.password}
                           ?allow-show-password=${this.challenge.allowShowPassword}
                           prefill=${PasswordManagerPrefill.password ?? ""}
+                          data-test-id="password-input"
                       ></ak-flow-input-password>
                   `
                 : nothing}
             ${this.renderNonFieldErrors()}
             ${this.challenge.captchaStage
-                ? html`
-                      <div class="captcha-container">
-                          <ak-stage-captcha
-                              .challenge=${this.challenge.captchaStage}
-                              .onTokenChange=${this.#tokenChangeListener}
-                              .onLoad=${this.#captchaLoadListener}
-                              .refreshedAt=${this.captchaRefreshedAt}
-                              embedded
-                          >
-                          </ak-stage-captcha>
-                          <input
-                              class="faux-input"
-                              ${ref(this.#captchaInputRef)}
-                              name="captchaToken"
-                              type="text"
-                              required
-                              value=""
-                          />
-                      </div>
-                  `
-                : nothing}
+  ? html`
+        <div class="captcha-container">
+          <ak-stage-captcha
+            .challenge=${this.challenge.captchaStage}
+            .onTokenChange=${this.#tokenChangeListener}
+            .onLoad=${this.#captchaLoadListener}
+            .refreshedAt=${this.captchaRefreshedAt}
+            embedded
+          >
+          </ak-stage-captcha>
+          <input
+            class="faux-input"
+            ${ref(this.#captchaInputRef)}
+            name="captchaToken"
+            type="text"
+            required
+            value=""
+          />
+        </div>
+      `
+  : nothing}
 
-            <div class="pf-c-form__group ${this.challenge.captchaStage ? "" : "pf-m-action"}">
-                <button
-                    ?disabled=${this.challenge.captchaStage && !this.captchaLoaded}
-                    type="submit"
-                    class="pf-c-button pf-m-primary pf-m-block"
-                >
-                    ${this.challenge.primaryAction}
-                </button>
-            </div>
+<!-- Actions row: Forgot password (left) | Login button (right) -->
+<div class="pf-c-form__group pf-m-action">
+  ${this.challenge.recoveryUrl
+    ? html`<p class="ak-recovery">
+            ${msg("Forgot your password?")}
+            <a id="recovery" href="${this.challenge.recoveryUrl}" data-test-id='reset-password-link'>
+              ${msg("Reset password")}
+            </a>
+          </p>`
+    : html`<span></span>`}
+  <button
+    ?disabled=${this.challenge.captchaStage && !this.captchaLoaded}
+    type="submit"
+    class="pf-c-button pf-m-primary"
+    data-test-id="login-button"
+  >
+    ${this.challenge.primaryAction}
+    <!-- Chevron -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="none"
+         viewBox="0 0 24 24" role="img" class="h-5 w-5" aria-label="ChevronRight">
+      <path fill="currentColor"
+            d="M15.44 11.5 5.47 1.53 6.53.47 17.56 11.5 6.53 22.53l-1.06-1.06z" />
+    </svg>
+  </button>
+</div>
             ${this.challenge.passwordlessUrl
                 ? html`<ak-divider>${msg("Or")}</ak-divider>`
                 : nothing}`;
@@ -397,7 +478,22 @@ export class IdentificationStage extends BaseStage<
 
     render(): TemplateResult {
         return html`<ak-flow-card .challenge=${this.challenge}>
-            <form class="pf-c-form" @submit=${this.submitForm}>
+            <form class="pf-c-form" @submit=${(e: Event) => {
+    const form = e.currentTarget as HTMLFormElement;
+    // Mark form as “submitted at least once”
+    form.classList.add('was-submitted');
+
+    // Let the browser run built-in validation:
+    if (!form.checkValidity()) {
+      // Block submit so the user sees native error UI + our CSS
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    // Proceed with the normal flow submit
+    this.submitForm(e as SubmitEvent);
+  }}>
                 ${this.challenge.applicationPre
                     ? html`<p>
                           ${msg(str`Login to continue to ${this.challenge.applicationPre}.`)}
