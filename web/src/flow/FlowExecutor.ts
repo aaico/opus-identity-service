@@ -517,12 +517,13 @@ export class FlowExecutor
     <ak-locale-context>
       <!-- Top-left brand (outside .left) -->
       <div class="topbar">
-        
-          <img
-            
-            src="http://localhost:9000/static/dist/assets/images/icon_opus.svg"
-            alt="Opus Identity Logo"
-          />
+   
+        <a href="https://www.opus.com/">
+            <img
+                src="http://localhost:9000/static/dist/assets/images/icon_opus.svg"
+                alt="Opus Identity Logo"
+            />
+        </a>
         
       </div>
 

@@ -450,9 +450,9 @@ input:focus {
 <div class="pf-c-form__group pf-m-action">
   ${this.challenge.recoveryUrl
     ? html`<p class="ak-recovery">
-            ${msg("Forgot your password?")}
+            
             <a id="recovery" href="${this.challenge.recoveryUrl}" data-test-id='reset-password-link'>
-              ${msg("Reset password")}
+             ${msg("Forgot your password?")}
             </a>
           </p>`
     : html`<span></span>`}
