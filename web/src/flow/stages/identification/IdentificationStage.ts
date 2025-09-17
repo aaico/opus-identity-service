@@ -145,6 +145,9 @@ input:focus {
   color: #6b7280;
 }
 
+.left ul.pf-c-login__main-footer-links { display: none !important; }
+.pf-c-login__main-footer-links  { display: none !important; }
+
   /* Stack on small screens */
   @media (max-width: 640px) {
     .pf-c-form__group.pf-m-action {
@@ -413,12 +416,12 @@ input:focus {
                       <ak-flow-input-password
                           label=${msg("Password")}
                           input-id="ak-stage-identification-password"
+                          data-test-id="password-input"
                           required
                           class="pf-c-form__group"
                           .errors=${this.challenge?.responseErrors?.password}
                           ?allow-show-password=${this.challenge.allowShowPassword}
                           prefill=${PasswordManagerPrefill.password ?? ""}
-                          data-test-id="password-input"
                       ></ak-flow-input-password>
                   `
                 : nothing}

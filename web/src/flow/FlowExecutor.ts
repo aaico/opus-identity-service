@@ -19,6 +19,7 @@ import { Interface } from "#elements/Interface";
 import { WithBrandConfig } from "#elements/mixins/branding";
 import { WithCapabilitiesConfig } from "#elements/mixins/capabilities";
 import { themeImage } from "#elements/utils/images";
+import { renderSourceIcon } from "#admin/sources/utils";
 
 import { StageHost, SubmitOptions } from "#flow/stages/base";
 
@@ -40,6 +41,7 @@ import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { until } from "lit/directives/until.js";
 
 import PFBase from "@patternfly/patternfly/patternfly-base.css";
+
 
 @customElement("ak-flow-executor")
 export class FlowExecutor
@@ -110,6 +112,7 @@ export class FlowExecutor
   align-items: stretch;      /* items-stretch */
   box-sizing: border-box;
 }
+  
 
 /* Keep the brand/logo and headings aligned to the same column width */
 .left .brand,
@@ -310,9 +313,119 @@ export class FlowExecutor
     @media (max-width: 960px) {
       .topbar { top: 16px; left: 16px; }
     }
+
+    
   
+/* --- Social header + tiles (merged + precise spacing) --- */
+.social-wrap {
+  width: 100%;
+  max-width: 458px;
+  margin: 0 0 16px; /* keep overall wrap spacing if you need it */
+}
+
+/* 16px between H1 and subtitle */
+.social-wrap h1 {
+  margin: 0 0 16px;
+}
+
+/* Subtitle line: “How would you like to log in?” */
+.social-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 40px; /* 40px down to the icon row */
+}
+
+/* Container for the four icons */
+.social-row {
+  display: flex;
+  width: 458px;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 30px; /* 30px down to the OR divider */
+}
+
+/* Individual tile */
+.social-tile {
+  display: flex;
+  height: 64px;
+  min-width: 64px;
+  padding: 16px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex: 1 0 0;
+  background: #fff;
+  border: 1px solid #eceef1;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .03s;
+}
+.social-tile:hover { border-color: #d1d5db; box-shadow: 0 0 0 3px rgba(209,213,219,.35); }
+.social-tile:active { transform: translateY(1px); }
+.social-tile img { height: 24px; width: auto; }
+
+/* Divider "— OR —" */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 458px;
+  margin: 0;              /* spacing handled by .social-row’s bottom margin */
+  color: #9ca3af;
+}
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  height: 1px;
+  background: #e5e7eb;
+  flex: 1;
+  border-radius: 1px;
+}
+.or-divider span {
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+/* Screen-reader only */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+
+@media (max-width:640px){.social-row,.or-divider{width:100%}}
     `,
   ];
+
+  private renderSocialSources() {
+  const ch: any = this.challenge;
+  const sources = ch?.sources ?? [];
+  const showLabels = !!ch?.showSourceLabels;
+
+  if (!sources.length) return nothing;
+
+  return html`
+    <div class="social-wrap" aria-label=${msg("Social sign-in")}>
+      <h1>${msg("Welcome to Opus")}</h1>
+      <div class="social-subtitle">${msg("How would you like to log in?")}</div>
+
+      <div class="social-row" role="group">
+        ${sources.map((source: any) => {
+          const icon = renderSourceIcon(source.name, source.iconUrl);
+          return html`
+            <button
+              type="button"
+              class="social-tile"
+              aria-label=${source.name}
+              @click=${() => { this.challenge = source.challenge; }}
+            >
+              ${icon}
+              ${showLabels ? html`<span class="sr-only">${source.name}</span>` : nothing}
+            </button>
+          `;
+        })}
+      </div>
+
+      <div class="or-divider"><span>${msg("OR")}</span></div>
+    </div>
+  `;
+}
 
   // === Properties ==============================================================
   @property() public flowSlug: string = window.location.pathname.split("/")[3];
@@ -520,7 +633,7 @@ export class FlowExecutor
    
         <a href="https://www.opus.com/">
             <img
-                src="http://localhost:9000/static/dist/assets/images/icon_opus.svg"
+                src="../../../assets/images/icon_opus.svg"
                 alt="Opus Identity Logo"
             />
         </a>
@@ -533,6 +646,9 @@ export class FlowExecutor
           ${this.loading && this.challenge ? html`<ak-loading-overlay></ak-loading-overlay>` : nothing}
 
           <!-- Removed the old .brand block so logo isn't inside .left -->
+          ${this.challenge?.component === "ak-stage-identification"
+  ? this.renderSocialSources()
+  : nothing}
 
           ${until(this.renderChallenge())}
 
@@ -544,7 +660,7 @@ export class FlowExecutor
         <!-- RIGHT: media -->
         <div class="right">
           <video autoplay muted loop playsinline>
-            <source src="http://localhost:9000/static/dist/assets/images/login-video.mp4" type="video/mp4" />
+            <source src="../../../assets/images/login-video.mp4" type="video/mp4" />
           </video>
         </div>
       </div>
