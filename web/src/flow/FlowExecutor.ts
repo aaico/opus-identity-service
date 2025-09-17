@@ -633,7 +633,7 @@ export class FlowExecutor
    
         <a href="https://www.opus.com/">
             <img
-                src="http://localhost:9000/static/dist/assets/images/icon_opus.svg"
+                src="../../../assets/images/icon_opus.svg"
                 alt="Opus Identity Logo"
             />
         </a>
@@ -660,7 +660,7 @@ export class FlowExecutor
         <!-- RIGHT: media -->
         <div class="right">
           <video autoplay muted loop playsinline>
-            <source src="http://localhost:9000/static/dist/assets/images/login-video.mp4" type="video/mp4" />
+            <source src="../../../assets/images/login-video.mp4" type="video/mp4" />
           </video>
         </div>
       </div>
