@@ -15,7 +15,6 @@ on:
 
 jobs:
   build-and-push-service:
-    name: 🏗️ Build & Push Docker Image
     uses: aaico/github-actions/.github/workflows/docker-build-push-ecr-arm64.yml@main
     with:
       aws-region: "us-west-2"
