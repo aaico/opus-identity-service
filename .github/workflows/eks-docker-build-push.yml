@@ -1,0 +1,28 @@
+
+name: Deploy to ECR for EKS
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  build-and-push-service:
+    name: 🏗️ Build & Push Docker Image
+    uses: aaico/github-actions/.github/workflows/docker-build-push-ecr-arm64.yml@main
+    with:
+      aws-region: "us-west-2"
+      ecr-registry: "605134441376.dkr.ecr.us-west-2.amazonaws.com"
+      ecr-repository: "${{ github.repository }}"
+      default-branch: "dev"
+      dockerfile-path: "Dockerfile"
+      platforms: "linux/arm64"
+    secrets:
+      role-to-assume: "arn:aws:iam::605134441376:role/github-actions+ECRPush@aaico-org+any-branch"
